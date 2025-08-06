@@ -44,16 +44,27 @@ class ChromaVectorStore:
                 if chunk.embedding is None:
                     chunk.embedding = self._generate_embedding(chunk.content)
                 
-                ids.append(chunk.id)
-                embeddings.append(chunk.embedding)
-                documents.append(chunk.content)
-                metadatas.append({
+                # Prepare metadata - convert lists and other types to strings
+                metadata = {
                     "document_id": chunk.document_id,
                     "chunk_index": chunk.chunk_index,
                     "filename": chunk.metadata.get("filename", ""),
                     "document_type": chunk.metadata.get("document_type", ""),
-                    **chunk.metadata
-                })
+                }
+                
+                # Add additional metadata, converting non-primitive types to strings
+                for key, value in chunk.metadata.items():
+                    if isinstance(value, (list, dict)):
+                        metadata[key] = str(value)
+                    elif isinstance(value, (str, int, float, bool)) or value is None:
+                        metadata[key] = value
+                    else:
+                        metadata[key] = str(value)
+                
+                ids.append(chunk.id)
+                embeddings.append(chunk.embedding)
+                documents.append(chunk.content)
+                metadatas.append(metadata)
             
             self.collection.add(
                 ids=ids,
