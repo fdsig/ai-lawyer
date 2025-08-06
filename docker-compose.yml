@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  legal-ai-api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - CHROMA_DB_PATH=./chroma_db
+      - MODEL_NAME=${MODEL_NAME:-gpt-4}
+      - TEMPERATURE=${TEMPERATURE:-0.1}
+      - MAX_TOKENS=${MAX_TOKENS:-2000}
+    volumes:
+      - ./chroma_db:/app/chroma_db
+      - ./uploads:/app/uploads
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  legal-ai-streamlit:
+    build: .
+    ports:
+      - "8501:8501"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - CHROMA_DB_PATH=./chroma_db
+      - MODEL_NAME=${MODEL_NAME:-gpt-4}
+      - TEMPERATURE=${TEMPERATURE:-0.1}
+      - MAX_TOKENS=${MAX_TOKENS:-2000}
+    volumes:
+      - ./chroma_db:/app/chroma_db
+      - ./uploads:/app/uploads
+    command: streamlit run streamlit_app.py --server.port 8501 --server.address 0.0.0.0
+    restart: unless-stopped
+    depends_on:
+      - legal-ai-api
+
+volumes:
+  chroma_data:
+  uploads_data: 
