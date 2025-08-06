@@ -14,8 +14,8 @@ from vector_store import ChromaVectorStore
 class LegalAnalysisTool(BaseTool):
     """Tool for analyzing legal documents and extracting key information"""
     
-    name = "legal_analysis"
-    description = "Analyze legal documents to extract key legal issues, parties, and context"
+    name: str = "legal_analysis"
+    description: str = "Analyze legal documents to extract key legal issues, parties, and context"
     
     def _run(self, document_content: str) -> str:
         """Run the legal analysis tool"""
@@ -46,12 +46,12 @@ class LegalAnalysisTool(BaseTool):
 class PrecedentSearchTool(BaseTool):
     """Tool for searching similar legal precedents"""
     
-    name = "precedent_search"
-    description = "Search for similar legal cases and precedents in the knowledge base"
+    name: str = "precedent_search"
+    description: str = "Search for similar legal cases and precedents in the knowledge base"
+    vector_store: ChromaVectorStore
     
     def __init__(self, vector_store: ChromaVectorStore):
-        super().__init__()
-        self.vector_store = vector_store
+        super().__init__(vector_store=vector_store)
     
     def _run(self, query: str) -> str:
         """Search for similar precedents"""
@@ -71,8 +71,8 @@ class PrecedentSearchTool(BaseTool):
 class ResponseGeneratorTool(BaseTool):
     """Tool for generating legal responses"""
     
-    name = "response_generator"
-    description = "Generate professional legal responses based on analysis and precedents"
+    name: str = "response_generator"
+    description: str = "Generate professional legal responses based on analysis and precedents"
     
     def _run(self, analysis: str, precedents: str, response_type: str = "professional") -> str:
         """Generate a legal response"""
@@ -142,7 +142,8 @@ class LegalAgentSystem:
             
             Use the available tools to perform these tasks effectively.
             Always provide professional, legally sound advice."""),
-            ("human", "{input}")
+            ("human", "{input}"),
+            ("ai", "{agent_scratchpad}")
         ])
         
         self.agent = create_openai_functions_agent(self.llm, tools, prompt)
